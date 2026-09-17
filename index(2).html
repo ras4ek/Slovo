@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>WordSketch v7.4</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #fdfdf6; --ink: #2b2b2b; --ink2: #6a6a6a;
+  --pencil-red: #d94f3d; --pencil-blue: #3f6fb5; --pencil-green: #3d9b6d;
+  --highlighter: #ffe27a; --line: #d8d8ce;
+  --sketch: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  --sketch2: 15px 225px 15px 255px / 255px 15px 225px 15px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { font-size: 16px; color-scheme: light; }
+body {
+  font-family: 'Kalam', 'Segoe Print', cursive;
+  color: var(--ink); min-height: 100vh;
+  display: flex; flex-direction: column; max-width: 560px; margin: 0 auto;
+  background-image:
+    linear-gradient(90deg, transparent 42px, rgba(217,79,61,.32) 42px, rgba(217,79,61,.32) 44px, transparent 44px),
+    repeating-linear-gradient(transparent, transparent 31px, var(--line) 31px, var(--line) 32px);
+}
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; position: sticky; top: 0; z-index: 10;
+  background: rgba(253,253,246,.97);
+  border-bottom: 2px solid var(--ink);
+}
+.logo { font-family: 'Caveat', cursive; font-size: 1.9rem; font-weight: 700; transform: rotate(-1.2deg); }
+.logo b { color: var(--pencil-blue); }
+.ver {
+  font-size: .8rem; font-weight: 700; color: var(--pencil-red);
+  border: 2px solid var(--pencil-red); padding: 3px 12px; border-radius: var(--sketch);
+  transform: rotate(2deg); background: #fff;
+}
+main { flex: 1; padding: 20px 18px 118px; }
+.view { display: none; will-change: transform, opacity; }
+
+@keyframes vin { from { opacity: 0; transform: translateY(10px) rotate(-.3deg); } to { opacity: 1; } }
+h2 {
+  font-family: 'Caveat', cursive; font-size: 2.1rem; font-weight: 700;
+  display: inline-block; transform: rotate(-.6deg);
+  border-bottom: 3px solid var(--highlighter); padding: 0 6px;
+}
+.sub { color: var(--ink2); font-size: .95rem; margin: 8px 0 20px; line-height: 1.55; }
+.card {
+  background: #fff; border: 2px solid var(--ink); border-radius: var(--sketch);
+  padding: 20px; margin-bottom: 18px; box-shadow: 4px 5px 0 rgba(43,43,43,.14);
+}
+.card:nth-child(even) { border-radius: var(--sketch2); transform: rotate(.3deg); }
+textarea, input[type=text], input[type=number], select {
+  width: 100%; min-height: 52px; background: var(--paper); border: 2px solid var(--ink);
+  border-radius: var(--sketch2); color: var(--ink); padding: 13px 16px;
+  font-size: 1.05rem; font-family: inherit; outline: none; line-height: 1.6;
+}
+textarea { min-height: 140px; resize: vertical; }
+textarea:focus, input:focus, select:focus { border-color: var(--pencil-blue); box-shadow: 3px 3px 0 rgba(63,111,181,.25); }
+.btn {
+  min-height: 54px; padding: 13px 22px; border: 2px solid var(--ink);
+  border-radius: var(--sketch); font-size: 1.05rem; font-weight: 700;
+  cursor: pointer; font-family: inherit; color: var(--ink); background: #fff;
+  box-shadow: 3px 3px 0 var(--ink); transition: transform .1s, box-shadow .1s;
+}
+.btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+.btn-pri { background: var(--highlighter); width: 100%; margin-top: 14px; }
+.btn-good { background: #c9ecd9; }
+.btn-dan { background: #fff; color: var(--pencil-red); border-color: var(--pencil-red); box-shadow: 3px 3px 0 var(--pencil-red); }
+.btn-dan:active { box-shadow: 1px 1px 0 var(--pencil-red); }
+.row { display: flex; gap: 12px; } .row .btn { flex: 1; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.chip {
+  padding: 8px 14px; border: 2px solid var(--ink2); border-radius: var(--sketch2);
+  font-size: .9rem; font-weight: 700; color: var(--ink2); background: #fff; user-select: none;
+}
+.chip.on { border-color: var(--pencil-blue); color: var(--pencil-blue); background: #eaf1fb; box-shadow: 2px 2px 0 rgba(63,111,181,.35); }
+.wordcard { text-align: center; padding: 38px 18px 28px; position: relative; }
+.wordcard::before {
+  content: ''; position: absolute; top: 12px; left: 50%; transform: translateX(-50%) rotate(-1deg);
+  width: 90px; height: 24px; background: rgba(255,226,122,.75); border-radius: 2px;
+}
+.word-big { font-size: 2.6rem; font-weight: 700; letter-spacing: 7px; word-break: break-all; }
+.word-real { font-size: 2.2rem; font-weight: 700; color: var(--pencil-blue); text-decoration: underline wavy var(--pencil-red); text-underline-offset: 8px; }
+.wordmeta { color: var(--ink2); font-size: .9rem; margin-top: 14px; font-weight: 700; }
+.eq { display: flex; gap: 4px; justify-content: center; align-items: flex-end; height: 30px; margin-top: 14px; }
+.eq b { width: 5px; height: 9px; border-radius: 3px; background: var(--pencil-blue); opacity: .2; }
+.eq.live b { animation: eq .9s ease-in-out infinite; opacity: 1; }
+.eq.live b:nth-child(2) { animation-delay: .12s; background: var(--pencil-red); }
+.eq.live b:nth-child(3) { animation-delay: .24s; }
+.eq.live b:nth-child(4) { animation-delay: .36s; background: var(--pencil-green); }
+.eq.live b:nth-child(5) { animation-delay: .48s; }
+.eq.live b:nth-child(6) { animation-delay: .3s; background: var(--pencil-red); }
+.eq.live b:nth-child(7) { animation-delay: .18s; }
+@keyframes eq { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(2.4); } }
+.status { text-align: center; font-weight: 700; font-size: 1.05rem; margin-top: 12px; min-height: 1.5em; color: var(--pencil-red); }
+.controls { display: flex; gap: 12px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+.cbtn {
+  width: 58px; height: 58px; border: 2px solid var(--ink); border-radius: 50%;
+  background: #fff; font-size: 1.25rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 3px 3px 0 var(--ink); transition: transform .1s, box-shadow .1s;
+}
+.cbtn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+.cbtn.main { width: 74px; height: 74px; background: var(--highlighter); font-size: 1.7rem; }
+.mic {
+  width: 86px; height: 86px; border: 3px solid var(--ink); border-radius: 50%;
+  background: #fff; font-size: 2.2rem; cursor: pointer; margin: 16px auto 0; display: flex;
+  align-items: center; justify-content: center; box-shadow: 4px 4px 0 var(--ink);
+  transition: transform .1s, box-shadow .1s;
+}
+.mic:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--ink); }
+.mic.rec { background: #fbd2cd; border-color: var(--pencil-red); box-shadow: 4px 4px 0 var(--pencil-red); animation: recpulse 1s infinite; }
+@keyframes recpulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+.progress { height: 10px; border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; margin-top: 18px; background: #fff; }
+.progress i { display: block; height: 100%; background: repeating-linear-gradient(45deg, var(--pencil-blue), var(--pencil-blue) 8px, #6b9bd4 8px, #6b9bd4 16px); width: 0; transition: width .35s; }
+input[type=range] { width: 100%; accent-color: var(--pencil-blue); height: 44px; }
+label.set { display: block; font-size: .95rem; font-weight: 700; margin: 18px 0 7px; color: var(--ink2); }
+.fb { text-align: center; font-weight: 700; font-size: 1.25rem; margin: 16px 0; min-height: 1.5em; font-family: 'Caveat', cursive; font-size: 1.7rem; }
+.fb.ok { color: var(--pencil-green); } .fb.no { color: var(--pencil-red); }
+.score { display: flex; gap: 12px; margin-bottom: 16px; }
+.score div { flex: 1; background: #fff; border: 2px solid var(--ink); border-radius: var(--sketch); padding: 12px; text-align: center; box-shadow: 3px 3px 0 rgba(43,43,43,.14); }
+.score b { display: block; font-size: 1.7rem; }
+.score span { font-size: .7rem; color: var(--ink2); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.empty { text-align: center; padding: 46px 18px; color: var(--ink2); }
+.empty .big { font-size: 3.2rem; margin-bottom: 12px; }
+nav {
+  position: fixed; bottom: 0; left: 0; right: 0; max-width: 560px; margin: 0 auto;
+  display: flex; gap: 4px; background: rgba(253,253,246,.97);
+  border-top: 2px solid var(--ink); padding: 8px 8px calc(10px + env(safe-area-inset-bottom)); z-index: 20;
+}
+nav label {
+  flex: 1; min-height: 56px; border: 2px solid transparent; background: none; color: var(--ink2);
+  font-size: .68rem; font-weight: 700; cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px; border-radius: var(--sketch2); font-family: inherit;
+}
+.tabrad { position: fixed; top: -50px; left: -50px; opacity: 0; pointer-events: none; }
+#tab-input:checked ~ nav label[for=tab-input],
+#tab-listen:checked ~ nav label[for=tab-listen],
+#tab-dict:checked ~ nav label[for=tab-dict],
+#tab-speak:checked ~ nav label[for=tab-speak],
+#tab-set:checked ~ nav label[for=tab-set] {
+  color: var(--ink); border-color: var(--ink); background: var(--highlighter); box-shadow: 2px 2px 0 var(--ink);
+}
+#tab-input:checked ~ main #v-input,
+#tab-listen:checked ~ main #v-listen,
+#tab-dict:checked ~ main #v-dict,
+#tab-speak:checked ~ main #v-speak,
+#tab-set:checked ~ main #v-set {
+  display: block; animation: vin .3s ease;
+}
+nav svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#toasts { position: fixed; bottom: 112px; left: 50%; transform: translateX(-50%); z-index: 50; display: flex; flex-direction: column; gap: 8px; width: min(92vw, 480px); pointer-events: none; }
+.toast {
+  background: #fff; color: var(--ink); border: 2px solid var(--ink); border-radius: var(--sketch2);
+  padding: 12px 16px; font-size: .95rem; font-weight: 700; box-shadow: 3px 3px 0 var(--ink);
+  animation: tin .3s ease;
+}
+.toast.err { border-color: var(--pencil-red); color: var(--pencil-red); box-shadow: 3px 3px 0 var(--pencil-red); }
+.toast.ok { border-color: var(--pencil-green); color: var(--pencil-green); box-shadow: 3px 3px 0 var(--pencil-green); }
+@keyframes tin { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; } }
+.hidden { display: none !important; }
+.setval { color: var(--pencil-blue); }
+/* === v5: стикеры со скотчем, штамп, конфетти, self-draw лого === */
+.card { position: relative; }
+.card:nth-of-type(odd) { background: #fffef6; }
+.card:not(.wordcard)::before {
+  content: ''; position: absolute; top: -12px; left: 50%; transform: translateX(-50%) rotate(-2.5deg);
+  width: 104px; height: 24px; background: rgba(255,214,120,.72);
+  border-left: 2px dashed rgba(43,43,43,.12); border-right: 2px dashed rgba(43,43,43,.12);
+}
+.stamp {
+  display: inline-block; padding: 4px 20px; border: 4px double var(--pencil-red);
+  border-radius: 10px; color: var(--pencil-red); font-family: 'Caveat', cursive;
+  font-size: 2.1rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  transform: rotate(-10deg) scale(2.2); opacity: 0;
+}
+.stamp.show { animation: stampIn .4s cubic-bezier(.2,1.5,.4,1) forwards; }
+@keyframes stampIn { to { opacity: .9; transform: rotate(-10deg) scale(1); } }
+.scrap { position: fixed; width: 11px; height: 15px; z-index: 60; pointer-events: none; animation: scrapFall 1.7s ease-in forwards; }
+@keyframes scrapFall {
+  0% { transform: translateY(-10px) rotate(0); opacity: 1; }
+  100% { transform: translateY(70vh) rotate(560deg); opacity: 0; }
+}
+.logo svg * { stroke-dasharray: 70; stroke-dashoffset: 70; fill-opacity: 0; animation: draw 1.1s ease .2s forwards, fillIn .5s ease 1s forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes fillIn { to { fill-opacity: 1; } }
+.lang-badge {
+  display: inline-block; border: 2px solid var(--ink2); border-radius: 8px;
+  font-size: .62em; padding: 1px 7px 0; font-weight: 700; color: var(--ink2);
+  vertical-align: 3px; margin-right: 4px;
+}
+/* === v6.9: плавность === */
+html { scroll-behavior: smooth; }
+main { overscroll-behavior: contain; }
+nav label, .chip { transition: transform .12s ease, background .15s ease, color .15s ease, border-color .15s ease, box-shadow .12s ease; }
+.card { animation-duration: .3s; }
+.btn, .cbtn, .mic { transition: transform .1s ease, box-shadow .15s ease, filter .15s ease; }
+/* === v7.4: без выделения текста и меню «копировать» === */
+body, h2, .sub, .card, .wordmeta, .status, .score, nav label, .chip, .btn, .cbtn, .mic, label.set, .toast, .logo {
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+input, textarea { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+</style>
+</head>
+<body>
+<input type="radio" name="tab" id="tab-input" class="tabrad" checked>
+<input type="radio" name="tab" id="tab-listen" class="tabrad">
+<input type="radio" name="tab" id="tab-dict" class="tabrad">
+<input type="radio" name="tab" id="tab-speak" class="tabrad">
+<input type="radio" name="tab" id="tab-set" class="tabrad">
+<nav>
+  <label for="tab-input"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Слова</label>
+  <label for="tab-listen"><svg viewBox="0 0 24 24"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="3" y="14" width="4" height="6" rx="1"/><rect x="17" y="14" width="4" height="6" rx="1"/></svg>Слушать</label>
+  <label for="tab-dict"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Диктант</label>
+  <label for="tab-speak"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/></svg>Говорить</label>
+  <label for="tab-set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Ещё</label>
+</nav>
+
+<header>
+  <div class="logo">Word<b>Sketch</b>&nbsp;<svg width="26" height="26" viewBox="0 0 24 24" style="transform:rotate(12deg);vertical-align:-4px"><g transform="rotate(45 12 12)"><rect x="8" y="2" width="8" height="14" fill="#ffe27a" stroke="#2b2b2b" stroke-width="1.6"/><polygon points="8,16 16,16 12,22.5" fill="#f7e8d2" stroke="#2b2b2b" stroke-width="1.6"/><polygon points="10.6,19.4 13.4,19.4 12,22.5" fill="#2b2b2b"/><rect x="8" y="2" width="8" height="3.2" fill="#f5b3c2" stroke="#2b2b2b" stroke-width="1.6"/></g></svg></div>
+  <span class="ver" id="verEgg" title="Попробуй тыкнуть 5 раз...">v7.4</span>
+</header>
+
+<main>
+  <section class="view active" id="v-input">
+    <h2>Мои слова</h2>
+    <p class="sub">Выбери язык и вставь список — через запятую или с новой строки. Потом тренируй: слушай произношение, переписывай слова, проверяй себя.</p>
+    <div class="card">
+      <label class="set" style="margin-top:0">Якорь языка списка</label>
+      <select id="inpLang" style="margin-bottom:12px">
+        <option value="en">🇬🇧 English — английские слова</option>
+        <option value="ru">🇷🇺 Русский — русские слова</option>
+      </select>
+      <textarea id="inpWords" placeholder="apple, banana, orange&#10;house&#10;dog, cat"></textarea>
+      <button class="btn btn-pri" id="btnSave"><svg viewBox="0 0 24 24" width="20" height="20" style="vertical-align:-4px;margin-right:6px"><path d="M5 3h11l3 3v15H5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 3v5h7V3M8 21v-7h8v7" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Сохранить слова</button>
+      <div class="chips" id="wordChips"></div>
+    </div>
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+      <div><b id="statCount" style="font-size:1.6rem">0</b> <span style="color:var(--ink2);font-size:.9rem">слов сохранено</span></div>
+      <button class="btn btn-dan" id="btnClear" style="width:auto;min-height:44px;padding:9px 18px;margin:0">Очистить</button>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="word-big" id="qWord" style="margin:6px 0">?</div>
+      <div class="wordmeta" id="qMeta">Нажми кнопку — выпадет случайное слово из твоего списка</div>
+      <button class="btn btn-pri" id="qThrow">❓ Бросить слово</button>
+      <div id="qAnswer" class="hidden" style="margin-top:14px">
+        <input type="text" id="qInput" placeholder="Перепиши слово как пишется..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <button class="btn btn-good" id="qCheck" style="width:100%;margin-top:10px">Проверить</button>
+      </div>
+      <div class="fb" id="qFb"></div>
+    </div>
+  </section>
+
+  <section class="view" id="v-listen">
+    <h2>Слушать</h2>
+    <p class="sub">Приложение само говорит слова каждые N секунд. Слова скрыты — сразу пиши, как слышишь, и жми Enter.</p>
+    <div id="listenEmpty" class="empty hidden">
+      <div class="big" style="font-family:'Caveat',cursive;transform:rotate(-3deg)">Пусто!</div>
+      <p style="margin-bottom:16px">Список пуст. Сначала добавь слова.</p>
+      <button class="btn btn-pri" style="margin-top:0" onclick="UI.go('input')">Добавить слова</button>
+    </div>
+    <div id="listenBody">
+      <div class="card wordcard">
+        <div class="word-big" id="lwWord">•••••</div>
+        <div class="wordmeta" id="lwMeta"></div>
+        <div class="eq" id="lwEq"><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
+        <div class="status" id="lwStatus"></div>
+        <div class="progress"><i id="lwBar"></i></div>
+      </div>
+      <div class="card">
+        <div class="score" style="margin-bottom:14px">
+          <div><b id="lScore" style="color:var(--pencil-green)">0</b><span>верно</span></div>
+          <div><b id="lTotal" style="color:var(--pencil-blue)">0</b><span>попыток</span></div>
+        </div>
+        <input type="text" id="lInput" placeholder="Напиши слово, как слышишь — и жми Enter" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <button class="btn btn-good" id="lCheck" style="width:100%;margin-top:10px">Проверить написание</button>
+        <div class="fb" id="lFb"></div>
+      </div>
+      <div class="controls">
+        <button class="cbtn" id="btnPrev" aria-label="Назад">⏮</button>
+        <button class="cbtn main" id="btnPlay" aria-label="Старт или пауза">▶</button>
+        <button class="cbtn" id="btnStop" aria-label="Стоп">⏹</button>
+        <button class="cbtn" id="btnNext" aria-label="Вперёд">⏭</button>
+      </div>
+      <div class="controls">
+        <button class="btn btn-ghost" id="btnPeek" style="width:auto"><svg viewBox="0 0 24 24" width="20" height="20" style="vertical-align:-4px;margin-right:6px"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/></svg>Подсмотреть</button>
+      </div>
+      <div class="card">
+        <label class="set" style="margin-top:0">Интервал между словами</label>
+        <div class="chips" id="intChips" style="margin-top:8px">
+          <div class="chip" data-int="5">5 с</div>
+          <div class="chip" data-int="10">10 с</div>
+          <div class="chip" data-int="15">15 с</div>
+          <div class="chip" data-int="30">30 с</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="v-dict">
+    <h2>Диктант</h2>
+    <p class="sub">Слушай слово — пиши как слышишь. Ошибся: сразу покажем и озвучим правильный ответ.</p>
+    <div id="dictEmpty" class="empty hidden">
+      <div class="big" style="font-family:'Caveat',cursive;transform:rotate(-3deg)">Пусто!</div>
+      <p style="margin-bottom:16px">Список пуст. Сначала добавь слова.</p>
+      <button class="btn btn-pri" style="margin-top:0" onclick="UI.go('input')">Добавить слова</button>
+    </div>
+    <div id="dictBody">
+      <div class="score">
+        <div><b id="dScore" style="color:var(--pencil-green)">0</b><span>верно</span></div>
+        <div><b id="dTotal" style="color:var(--pencil-blue)">0</b><span>всего</span></div>
+      </div>
+      <div class="card wordcard">
+        <div class="word-big" id="dWord">•••••</div>
+        <div class="wordmeta" id="dMeta">Нажми «🔊», если не расслышал</div>
+      </div>
+      <input type="text" id="dInput" placeholder="Напиши слово..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="margin-bottom:12px">
+      <div class="row">
+        <button class="btn btn-ghost" id="dHear" style="width:auto"><svg viewBox="0 0 24 24" width="20" height="20" style="vertical-align:-4px;margin-right:6px"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16.5 8.5c1.8 1.8 1.8 5.2 0 7M19 6c3 3 3 9 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Ещё раз</button>
+        <button class="btn btn-good" id="dCheck">Проверить</button>
+      </div>
+      <div class="fb" id="dFb"></div>
+      <button class="btn btn-pri hidden" id="dNext">Следующее слово →</button>
+    </div>
+    <button class="btn btn-pri" id="dStart">▶ Начать диктант</button>
+  </section>
+
+  <section class="view" id="v-speak">
+    <h2>Произношение</h2>
+    <p class="sub">Послушай слово, нажми на микрофон и произнеси его. Приложение сравнит, что услышало.</p>
+    <div id="speakEmpty" class="empty hidden">
+      <div class="big" style="font-family:'Caveat',cursive;transform:rotate(-3deg)">Пусто!</div>
+      <p style="margin-bottom:16px">Список пуст. Сначала добавь слова.</p>
+      <button class="btn btn-pri" style="margin-top:0" onclick="UI.go('input')">Добавить слова</button>
+    </div>
+    <div id="speakBody">
+      <div class="score">
+        <div><b id="pScore" style="color:var(--pencil-green)">0</b><span>верно</span></div>
+        <div><b id="pTotal" style="color:var(--pencil-blue)">0</b><span>всего</span></div>
+      </div>
+      <div class="card wordcard">
+        <div class="word-big" id="pWord">•••••</div>
+        <div class="wordmeta" id="pMeta"></div>
+      </div>
+      <div class="mic" id="pMic" aria-label="Говорить"><svg viewBox="0 0 24 24" width="36" height="36"><rect x="9" y="2" width="6" height="11" rx="3" fill="none" stroke="#2b2b2b" stroke-width="2"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" fill="none" stroke="#2b2b2b" stroke-width="2" stroke-linecap="round"/></svg></div>
+      <div class="controls">
+        <button class="btn btn-ghost" id="pHear" style="width:auto"><svg viewBox="0 0 24 24" width="20" height="20" style="vertical-align:-4px;margin-right:6px"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16.5 8.5c1.8 1.8 1.8 5.2 0 7M19 6c3 3 3 9 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Послушать</button>
+        <button class="btn btn-ghost" id="pSkip" style="width:auto">Пропустить →</button>
+      </div>
+      <div class="fb" id="pFb"></div>
+      <button class="btn btn-pri hidden" id="pNext">Следующее слово →</button>
+    </div>
+    <button class="btn btn-pri" id="pStart">▶ Начать тренировку</button>
+  </section>
+
+  <section class="view" id="v-set">
+    <h2>Настройки</h2>
+    <p class="sub">Всё сохраняется автоматически.</p>
+    <div class="card">
+      <label class="set" style="margin-top:0">Голос: английский</label>
+      <select id="sVoiceEn"><option value="">Авто</option></select>
+      <label class="set">Голос: русский</label>
+      <select id="sVoiceRu"><option value="">Авто</option></select>
+      <label class="set">Скорость речи: <span class="setval" id="sRateV">0.9</span></label>
+      <input type="range" id="sRate" min="0.5" max="1.5" step="0.1" value="0.9">
+      <label class="set">Интервал (3–60 сек): <span class="setval" id="sIntV">10</span></label>
+      <input type="number" id="sInt" min="3" max="60" value="10">
+      <label class="set">Показ слов</label>
+      <select id="sHide">
+        <option value="1">Скрывать точками</option>
+        <option value="0">Показывать открыто</option>
+      </select>
+      <label class="set">Звуковые эффекты</label>
+      <select id="sSound">
+        <option value="1">Включены</option>
+        <option value="0">Выключены</option>
+      </select>
+      <button class="btn btn-ghost" id="sTest" style="width:100%;margin-top:18px"><svg viewBox="0 0 24 24" width="20" height="20" style="vertical-align:-4px;margin-right:6px"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16.5 8.5c1.8 1.8 1.8 5.2 0 7M19 6c3 3 3 9 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Проверить звук</button>
+      <button class="btn btn-dan" id="sReset" style="width:100%;margin-top:10px">Сбросить всё</button>
+    </div>
+    <div class="card" style="color:var(--ink2);font-size:.9rem;line-height:1.7">
+      Если звука нет — открой в браузере (Chrome). Звук и микрофон включаются после первого нажатия на кнопку.
+    </div>
+  </section>
+</main>
+
+
+
+<div id="toasts"></div>
+<noscript><div style="padding:20px;text-align:center;font-weight:bold">Включи JavaScript в браузере — без него приложение не работает.</div></noscript>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+function toast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (type === 'err' ? ' err' : type === 'ok' ? ' ok' : '');
+  t.textContent = msg;
+  $('toasts').appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, 3200);
+}
+window.addEventListener('error', e => toast('Ошибка: ' + (e.message || 'неизвестная'), 'err'));
+window.addEventListener('unhandledrejection', e => toast('Ошибка: ' + (e.reason && e.reason.message || 'сбой'), 'err'));
+
+/* ===== вау-эффекты: штамп и бумажное конфетти ===== */
+function stamp(el, text) {
+  el.className = 'fb';
+  el.innerHTML = '<span class="stamp show">' + text + '</span>';
+}
+function memeStamp() {
+  const pool = [
+    'ДА ТЫ СНАЙПЕР', 'ЭТО БЫЛО ПЕРФЕКТ', 'ИМБА', 'ЛЕГЕНДА', 'БАЗА',
+    'АБСОЛЮТНЫЙ ПЕРФЕКТ', 'ТОП-1', 'ВНЕ КОНКУРЕНЦИИ', 'МОНСТР', 'ГГ, КРАСАВА',
+    'ЧИТЕР?', 'СКИЛЛ ИШЬ', 'ПРОСТО КОСМОС', 'ФЛЕКС', 'БОГ ПРАВОПИСАНИЯ'
+  ];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+/* ===== 🥚 ПАСХАЛКА РОСТИК: три уровня ===== */
+function rostikMode() {
+  toast('👑 САМ РОСТИК ЗАШЁЛ — удача ×10 на весь день', 'ok');
+  scraps();
+  for (let i = 1; i <= 12; i++) setTimeout(scraps, i * 130);
+}
+let __rostikCd = 0;
+function rostikTry() {
+  const now = Date.now();
+  if (now - __rostikCd < 4000) return;
+  __rostikCd = now;
+  rostikMode();
+}
+document.addEventListener('input', e => {
+  if (!e.target.matches || !e.target.matches('input, textarea')) return;
+  const v = (e.target.value || '').toLowerCase();
+  if (v.endsWith('ростик') || v.endsWith('rostik')) rostikTry();
+});
+let __rostikBuf = '';
+document.addEventListener('keydown', e => {
+  if (!e.key || e.key.length !== 1) return;
+  __rostikBuf = (__rostikBuf + e.key.toLowerCase()).slice(-6);
+  if (__rostikBuf === 'ростик' || __rostikBuf === 'rostik') {
+    __rostikBuf = '';
+    rostikTry();
+  }
+});
+let __verTaps = 0, __verTimer = null;
+document.getElementById('verEgg').addEventListener('click', () => {
+  __verTaps++;
+  clearTimeout(__verTimer);
+  __verTimer = setTimeout(() => __verTaps = 0, 2500);
+  if (__verTaps === 5) {
+    __verTaps = 0;
+    scraps();
+    toast('Секрет открыт. Только никому.', 'ok');
+  } else if (__verTaps === 3) {
+    toast('Теплее... теплее...', 'info');
+  }
+});
+(function() {
+  const logo = document.querySelector('.logo');
+  if (!logo) return;
+  let t = null;
+  const fire = () => {
+    toast('Вот это терпение. Секрет для самых упорных — найден', 'ok');
+    scraps();
+    for (let i = 1; i <= 8; i++) setTimeout(scraps, i * 160);
+  };
+  const start = () => { clearTimeout(t); t = setTimeout(fire, 700); };
+  const cancel = () => { clearTimeout(t); };
+  logo.addEventListener('touchstart', start, { passive: true });
+  logo.addEventListener('touchend', cancel);
+  logo.addEventListener('touchmove', cancel);
+  logo.addEventListener('mousedown', start);
+  logo.addEventListener('mouseup', cancel);
+  logo.addEventListener('mouseleave', cancel);
+  logo.addEventListener('contextmenu', e => e.preventDefault());
+})();
+function scraps() {
+  const colors = ['#ffe27a', '#f5b3c2', '#a8c8f0', '#b8e6c8', '#f7e8d2'];
+  for (let i = 0; i < 14; i++) {
+    const s = document.createElement('div');
+    s.className = 'scrap';
+    s.style.background = colors[i % colors.length];
+    s.style.left = (28 + Math.random() * 44) + 'vw';
+    s.style.top = '-20px';
+    s.style.animationDelay = (Math.random() * 0.35) + 's';
+    if (Math.random() > 0.5) s.style.borderRadius = '50%';
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 2300);
+  }
+}
+
+/* ===== звуковые эффекты (Web Audio, без файлов) ===== */
+const Sfx = {
+  ctx: null,
+  ac() {
+    if (!state.settings.sound) return null;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    if (!this.ctx) this.ctx = new AC();
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    return this.ctx;
+  },
+  blip(f0, f1, dur, vol, delay) {
+    const c = this.ac(); if (!c) return;
+    try {
+      const o = c.createOscillator(), g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      const t = c.currentTime + (delay || 0);
+      o.type = 'sine';
+      o.frequency.setValueAtTime(f0, t);
+      o.frequency.exponentialRampToValueAtTime(Math.max(f1, 1), t + dur);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0004, t + dur);
+      o.start(t); o.stop(t + dur + 0.03);
+    } catch (e) {}
+  },
+  key() { this.blip(520 + Math.random() * 60, 240, 0.06, 0.06); },
+  click() { this.blip(900, 500, 0.045, 0.05); },
+  pop() { this.blip(700, 300, 0.05, 0.045); },
+  ok() { this.blip(523, 523, 0.22, 0.04); this.blip(784, 784, 0.28, 0.033, 0.09); },
+  bad() { this.blip(320, 160, 0.2, 0.045); },
+  swish() { this.blip(400, 900, 0.12, 0.024); }
+};
+document.addEventListener('click', e => {
+  if (e.target.closest('.btn, .cbtn, .chip, .mic, nav label')) Sfx.click();
+});
+let __keyT = 0;
+document.addEventListener('keydown', e => {
+  if (!state.settings.sound) return;
+  if (!e.target.matches || !e.target.matches('input, textarea')) return;
+  const now = Date.now();
+  if (now - __keyT < 40) return;
+  __keyT = now;
+  Sfx.key();
+});
+
+/* ===== хранилище ===== */
+const Store = {
+  KEY: 'slova7',
+  load() {
+    try {
+      const d = JSON.parse(localStorage.getItem(this.KEY));
+      if (d && Array.isArray(d.words)) {
+        if (d.words.length && typeof d.words[0] === 'string') d.words = d.words.map(t => ({ t: t, l: 'en' }));
+        return d;
+      }
+    } catch (e) {}
+    return { words: [], settings: { rate: 0.9, interval: 10, voice_en: '', voice_ru: '', hide: true, sound: true } };
+  },
+  save() { try { localStorage.setItem(this.KEY, JSON.stringify(state)); return true; } catch (e) { toast('Хранилище недоступно', 'err'); return false; } }
+};
+let state = Store.load();
+state.settings = Object.assign({ rate: 0.9, interval: 10, voice_en: '', voice_ru: '', hide: true, sound: true }, state.settings);
+
+/* ===== речь ===== */
+function entryVoice(e) {
+  const voices = speechSynthesis.getVoices();
+  const want = e.l === 'ru' ? state.settings.voice_ru : state.settings.voice_en;
+  return voices.find(v => v.name === want)
+      || voices.find(v => v.lang && v.lang.toLowerCase().startsWith(e.l))
+      || null;
+}
+let eqTimer = null;
+function eqOn() {
+  clearTimeout(eqTimer);
+  const eq = $('lwEq'); if (eq) eq.classList.add('live');
+  eqTimer = setTimeout(() => { const q = $('lwEq'); if (q) q.classList.remove('live'); }, 1500);
+}
+function speakEntry(e) {
+  if (!('speechSynthesis' in window)) { toast('Озвучка не поддерживается — открой в Chrome', 'err'); return; }
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(e.t);
+    u.rate = state.settings.rate;
+    const v = entryVoice(e);
+    if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = e.l === 'ru' ? 'ru-RU' : 'en-US'; }
+    speechSynthesis.speak(u);
+  } catch (err) { toast('Ошибка озвучки: ' + err.message, 'err'); }
+  eqOn();
+}
+function announce(e) { speakEntry(e); toast('[' + e.l.toUpperCase() + '] ' + e.t); }
+function fillVoices() {
+  if (!('speechSynthesis' in window)) return;
+  const voices = speechSynthesis.getVoices();
+  ['sVoiceEn', 'sVoiceRu'].forEach((id, i) => {
+    const sel = $(id); if (!sel) return;
+    const cur = i === 0 ? state.settings.voice_en : state.settings.voice_ru;
+    const pre = i === 0 ? 'en' : 'ru';
+    sel.innerHTML = '<option value="">Авто</option>' +
+      voices.filter(v => !v.lang || v.lang.toLowerCase().startsWith(pre.slice(0, 2)) || true)
+        .map(v => '<option value="' + v.name.replace(/"/g, '&quot;') + '">' + v.name + ' (' + v.lang + ')</option>').join('');
+    sel.value = cur || '';
+  });
+}
+if ('speechSynthesis' in window) { fillVoices(); speechSynthesis.onvoiceschanged = fillVoices; }
+
+function mask(w) { return state.settings.hide ? '•'.repeat(Math.max(w.length, 3)) : w; }
+function flag(e) { return '<span class="lang-badge">' + (e.l === 'ru' ? 'RU' : 'EN') + '</span>'; }
+
+/* ===== навигация ===== */
+const UI = {
+  go(v) { const r = $('tab-' + v); if (r) r.checked = true; this.refresh(v); },
+  refresh(v) {
+    if (v === 'listen') Listen.render();
+    if (v === 'dict') Dict.render();
+    if (v === 'speak') Speak.render();
+    if (v === 'set') Settings.render();
+  }
+};
+document.querySelectorAll('.tabrad').forEach(r => r.addEventListener('change', () => { Sfx.swish(); UI.refresh(r.id.replace('tab-', '')); }));
+
+/* ===== слова ===== */
+const Input = {
+  render() {
+    $('statCount').textContent = state.words.length;
+    $('wordChips').innerHTML = state.words.slice(0, 50).map(w =>
+      '<div class="chip">' + flag(w) + ' ' + mask(w.t) + '</div>').join('')
+      + (state.words.length > 50 ? '<div class="chip">… +' + (state.words.length - 50) + '</div>' : '');
+  },
+  save() {
+    const lang = $('inpLang').value;
+    const list = $('inpWords').value.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
+    const seen = {};
+    state.words.forEach(w => { seen[w.l + ':' + w.t.toLowerCase()] = 1; });
+    const out = [];
+    list.forEach(w => { const k = lang + ':' + w.toLowerCase(); if (!seen[k]) { seen[k] = 1; out.push({ t: w, l: lang }); } });
+    if (!out.length) { toast(list.length ? 'Такие слова уже есть в списке' : 'Введи хотя бы одно слово', 'info'); return; }
+    state.words = state.words.concat(out);
+    if (Store.save()) { $('inpWords').value = ''; this.render(); toast('Добавлено слов: ' + out.length, 'ok'); }
+  },
+  clear() {
+    if (!state.words.length) return;
+    if (confirm('Удалить все ' + state.words.length + ' слов?')) {
+      state.words = []; Store.save(); this.render(); toast('Список очищен');
+    }
+  }
+};
+$('btnSave').addEventListener('click', () => Input.save());
+$('btnClear').addEventListener('click', () => Input.clear());
+
+$('inpLang').addEventListener('change', e => {
+  $('inpWords').placeholder = e.target.value === 'ru'
+    ? 'яблоко, собака, дом\nмашина\nсолнце, луна'
+    : 'apple, banana, orange\nhouse\ndog, cat';
+});
+
+/* ===== слушать ===== */
+const Listen = {
+  idx: 0, left: 0, timer: null, playing: false, peeking: false, reveal: false,
+  score: 0, total: 0, answered: {},
+  render() {
+    const has = state.words.length > 0;
+    $('listenEmpty').classList.toggle('hidden', has);
+    $('listenBody').classList.toggle('hidden', !has);
+    if (!has) { this.stop(true); return; }
+    if (this.idx >= state.words.length) this.idx = 0;
+    this.draw();
+    document.querySelectorAll('#intChips .chip').forEach(c => c.classList.toggle('on', +c.dataset.int === state.settings.interval));
+  },
+  cur() { return state.words[this.idx]; },
+  draw() {
+    const e = this.cur();
+    if (!e) {
+      $('lwWord').textContent = '•••••';
+      $('lwWord').className = 'word-big';
+      $('lwMeta').textContent = 'Список пуст — добавь слова';
+      $('lwBar').style.width = '0%';
+      $('lwStatus').textContent = '';
+      $('btnPlay').textContent = '▶';
+      return;
+    }
+    const show = this.peeking || this.reveal;
+    $('lwWord').textContent = show ? e.t : mask(e.t);
+    $('lwWord').className = show ? 'word-real' : 'word-big';
+    $('lwMeta').textContent = flag(e) + ' Слово ' + (this.idx + 1) + ' из ' + state.words.length;
+    $('lwBar').style.width = ((this.idx + 1) / state.words.length * 100) + '%';
+    $('lwStatus').textContent = !this.playing ? '⏸ пауза' : ('следующее через ' + this.left + ' с');
+    $('lwStatus').style.color = this.playing ? 'var(--pencil-red)' : 'var(--ink2)';
+    $('btnPlay').textContent = this.playing ? '⏸' : '▶';
+  },
+  start() {
+    if (this.playing) { this.pause(); return; }
+    if (!state.words.length) { toast('Сначала добавь слова', 'err'); return; }
+    this.playing = true;
+    this.score = 0; this.total = 0; this.answered = {};
+    $('lScore').textContent = 0; $('lTotal').textContent = 0;
+    $('lFb').textContent = ''; $('lFb').className = 'fb'; $('lInput').value = '';
+    this.left = state.settings.interval;
+    this.say();
+    this.timer = setInterval(() => {
+      this.left--;
+      if (this.left <= 0) this.step(1);
+      this.draw();
+    }, 1000);
+    this.draw();
+  },
+  pause(silent) {
+    this.playing = false;
+    clearInterval(this.timer); this.timer = null;
+    try { speechSynthesis.cancel(); } catch (e) {}
+    if (!silent) toast('Пауза');
+    this.draw();
+  },
+  stop(silent) {
+    this.pause(true); this.idx = 0; this.reveal = false;
+    $('lFb').textContent = ''; $('lFb').className = 'fb'; $('lInput').value = '';
+    this.left = state.settings.interval;
+    if (!silent) this.draw();
+  },
+  step(d) {
+    const prev = this.idx;
+    this.idx = (this.idx + d + state.words.length) % state.words.length;
+    if (d > 0 && prev === state.words.length - 1 && this.idx === 0) {
+      scraps(); toast('Круг пройден! Начинаю сначала', 'ok');
+    }
+    this.reveal = false;
+    $('lFb').textContent = ''; $('lFb').className = 'fb'; $('lInput').value = '';
+    this.left = state.settings.interval;
+    this.say();
+    this.draw();
+  },
+  say() { announce(this.cur()); },
+  peek() {
+    if (this.peeking || !state.words.length) return;
+    this.peeking = true; this.draw();
+    setTimeout(() => { this.peeking = false; this.draw(); }, 1600);
+  },
+  check() {
+    if (!state.words.length || !this.cur()) return;
+    const e = this.cur();
+    const ans = $('lInput').value.trim().toLowerCase().replace(/ё/g, 'е');
+    if (!ans) { toast('Напиши слово, как слышишь', 'err'); return; }
+    if (this.answered[e.l + ':' + e.t]) { toast('Это слово уже отгадано', 'info'); $('lInput').value = ''; return; }
+    const right = e.t.toLowerCase().replace(/ё/g, 'е');
+    this.total++;
+    const fb = $('lFb');
+    if (ans === right) {
+      this.score++; this.answered[e.l + ':' + e.t] = 1;
+      Sfx.ok(); scraps();
+      stamp(fb, memeStamp());
+    } else {
+      Sfx.bad();
+      fb.textContent = '✗ Правильно: ' + e.t; fb.className = 'fb no';
+      speakEntry(e);
+    }
+    this.reveal = true;
+    $('lScore').textContent = this.score; $('lTotal').textContent = this.total;
+    $('lInput').value = '';
+    this.draw();
+    $('lInput').focus();
+  }
+};
+$('btnPlay').addEventListener('click', () => Listen.start());
+$('btnStop').addEventListener('click', () => Listen.stop());
+$('btnNext').addEventListener('click', () => { if (state.words.length) Listen.step(1); });
+$('btnPrev').addEventListener('click', () => { if (state.words.length) Listen.step(-1); });
+$('btnPeek').addEventListener('click', () => Listen.peek());
+$('lCheck').addEventListener('click', () => Listen.check());
+$('lInput').addEventListener('keydown', e => { if (e.key === 'Enter') Listen.check(); });
+document.querySelectorAll('#intChips .chip').forEach(c => c.addEventListener('click', () => {
+  state.settings.interval = +c.dataset.int; Store.save();
+  if (Listen.playing) Listen.left = state.settings.interval;
+  Listen.render(); toast('Интервал: ' + c.dataset.int + ' с', 'ok');
+}));
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && Listen.playing) Listen.pause(true);
+});
+
+/* ===== диктант ===== */
+const Dict = {
+  order: [], pos: 0, score: 0, total: 0, done: false,
+  render() {
+    const has = state.words.length > 0;
+    $('dictEmpty').classList.toggle('hidden', has);
+    $('dictBody').classList.toggle('hidden', !has);
+    $('dStart').classList.toggle('hidden', !has);
+  },
+  start() {
+    this.order = state.words.map((w, i) => i).sort(() => Math.random() - 0.5);
+    this.pos = 0; this.score = 0; this.total = 0;
+    $('dStart').classList.add('hidden');
+    toast('Диктант начался — слушай!', 'ok');
+    this.next(true);
+  },
+  cur() { return state.words[this.order[this.pos]]; },
+  next(auto) {
+    if (this.pos >= this.order.length) {
+      Sfx.ok();
+      $('dWord').textContent = 'Финиш!';
+      $('dMeta').textContent = 'Готово! Результат: ' + this.score + ' из ' + this.total;
+      $('dFb').textContent = '';
+      $('dNext').classList.add('hidden');
+      $('dStart').classList.remove('hidden');
+      $('dStart').textContent = '↻ Начать заново';
+      return;
+    }
+    this.done = false;
+    $('dWord').textContent = mask(this.cur().t);
+    $('dWord').className = 'word-big';
+    $('dMeta').textContent = flag(this.cur()) + ' Слово ' + (this.pos + 1) + ' из ' + this.order.length;
+    $('dInput').value = ''; $('dFb').textContent = ''; $('dFb').className = 'fb';
+    $('dNext').classList.add('hidden');
+    $('dScore').textContent = this.score; $('dTotal').textContent = this.total;
+    if (auto) announce(this.cur());
+    setTimeout(() => $('dInput').focus(), 200);
+  },
+  check() {
+    if (this.done || !this.order.length) return;
+    const ans = $('dInput').value.trim().toLowerCase().replace(/ё/g, 'е');
+    const right = this.cur().t.toLowerCase().replace(/ё/g, 'е');
+    this.total++; this.done = true;
+    const fb = $('dFb');
+    if (ans === right) {
+      this.score++; Sfx.ok(); scraps();
+      stamp(fb, memeStamp());
+    } else {
+      Sfx.bad();
+      fb.textContent = '✗ Правильно: ' + this.cur().t; fb.className = 'fb no';
+      announce(this.cur());
+    }
+    $('dWord').textContent = this.cur().t;
+    $('dWord').className = 'word-real';
+    $('dScore').textContent = this.score; $('dTotal').textContent = this.total;
+    $('dNext').classList.remove('hidden');
+  }
+};
+$('dStart').addEventListener('click', () => Dict.start());
+$('dCheck').addEventListener('click', () => Dict.check());
+$('dHear').addEventListener('click', () => { if (Dict.order.length) announce(Dict.cur()); });
+$('dNext').addEventListener('click', () => { Dict.pos++; Dict.next(true); });
+$('dInput').addEventListener('keydown', e => { if (e.key === 'Enter') Dict.check(); });
+
+/* ===== произношение ===== */
+const Speak = {
+  order: [], pos: 0, score: 0, total: 0, done: false, rec: null,
+  render() {
+    const has = state.words.length > 0;
+    $('speakEmpty').classList.toggle('hidden', has);
+    $('speakBody').classList.toggle('hidden', !has);
+    $('pStart').classList.toggle('hidden', !has);
+  },
+  supported() { return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window; },
+  start() {
+    if (!this.supported()) { toast('Распознавание речи не поддерживается — открой в Chrome', 'err'); return; }
+    this.order = state.words.map((w, i) => i).sort(() => Math.random() - 0.5);
+    this.pos = 0; this.score = 0; this.total = 0;
+    $('pStart').classList.add('hidden');
+    toast('Слушай и повторяй за диктором!', 'ok');
+    this.next(true);
+  },
+  cur() { return state.words[this.order[this.pos]]; },
+  next(auto) {
+    if (this.pos >= this.order.length) {
+      Sfx.ok();
+      $('pWord').textContent = 'Финиш!';
+      $('pMeta').textContent = 'Готово! Результат: ' + this.score + ' из ' + this.total;
+      $('pFb').textContent = '';
+      $('pNext').classList.add('hidden');
+      $('pStart').classList.remove('hidden');
+      $('pStart').textContent = '↻ Начать заново';
+      return;
+    }
+    this.done = false;
+    $('pWord').textContent = mask(this.cur().t);
+    $('pWord').className = 'word-big';
+    $('pMeta').textContent = flag(this.cur()) + ' Слово ' + (this.pos + 1) + ' из ' + this.order.length + ' — нажми 🎤 и произнеси';
+    $('pFb').textContent = ''; $('pFb').className = 'fb';
+    $('pNext').classList.add('hidden');
+    $('pScore').textContent = this.score; $('pTotal').textContent = this.total;
+    if (auto) announce(this.cur());
+  },
+  mic() {
+    if (this.done || !this.order.length) return;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const mic = $('pMic');
+    if (mic.classList.contains('rec')) { try { this.rec.stop(); } catch (e) {} return; }
+    const rec = new SR();
+    this.rec = rec;
+    const e = this.cur();
+    rec.lang = e.l === 'ru' ? 'ru-RU' : 'en-US';
+    rec.interimResults = false; rec.maxAlternatives = 1;
+    mic.classList.add('rec');
+    rec.onresult = (ev) => {
+      mic.classList.remove('rec');
+      const said = ev.results[0][0].transcript.toLowerCase().trim().replace(/ё/g, 'е').replace(/[.,!?]/g, '');
+      const right = e.t.toLowerCase().replace(/ё/g, 'е');
+      this.total++; this.done = true;
+      const fb = $('pFb');
+      if (said === right || said.includes(right) || right.includes(said)) {
+        this.score++; Sfx.ok(); scraps();
+        stamp(fb, memeStamp());
+      } else {
+        Sfx.bad();
+        fb.textContent = 'Слышно: «' + ev.results[0][0].transcript + '» — правильно: ' + e.t;
+        fb.className = 'fb no';
+        speakEntry(e);
+      }
+      $('pWord').textContent = e.t;
+      $('pWord').className = 'word-real';
+      $('pScore').textContent = this.score; $('pTotal').textContent = this.total;
+      $('pNext').classList.remove('hidden');
+    };
+    rec.onerror = () => { mic.classList.remove('rec'); toast('Не расслышал — попробуй ещё раз', 'err'); };
+    rec.onend = () => mic.classList.remove('rec');
+    try { rec.start(); } catch (err) { mic.classList.remove('rec'); toast('Микрофон недоступен', 'err'); }
+  }
+};
+$('pStart').addEventListener('click', () => Speak.start());
+$('pMic').addEventListener('click', () => Speak.mic());
+$('pHear').addEventListener('click', () => { if (Speak.order.length) announce(Speak.cur()); });
+$('pSkip').addEventListener('click', () => { if (Speak.order.length) { Speak.total++; Speak.pos++; Speak.next(true); } });
+$('pNext').addEventListener('click', () => { Speak.pos++; Speak.next(true); });
+
+/* ===== быстрый вызов: бросок слова ===== */
+const Quick = {
+  cur: null,
+  throw() {
+    if (!state.words.length) { toast('Сначала добавь слова во вкладке «Слова»', 'err'); return; }
+    this.cur = state.words[Math.floor(Math.random() * state.words.length)];
+    $('qWord').textContent = this.cur.t;
+    $('qWord').className = 'word-real';
+    $('qMeta').textContent = flag(this.cur) + ' Слушай произношение и перепиши слово';
+    $('qAnswer').classList.remove('hidden');
+    $('qFb').textContent = ''; $('qFb').className = 'fb';
+    $('qInput').value = '';
+    announce(this.cur);
+    setTimeout(() => $('qInput').focus(), 200);
+  },
+  check() {
+    if (!this.cur) return;
+    const ans = $('qInput').value.trim().toLowerCase().replace(/ё/g, 'е');
+    const right = this.cur.t.toLowerCase().replace(/ё/g, 'е');
+    const fb = $('qFb');
+    if (ans === right) { Sfx.ok(); scraps(); stamp(fb, memeStamp()); }
+    else { Sfx.bad(); fb.textContent = '✗ Правильно: ' + this.cur.t; fb.className = 'fb no'; speakEntry(this.cur); }
+    $('qAnswer').classList.add('hidden');
+    $('qMeta').textContent = 'Нажми «❓ Бросить слово» ещё раз';
+    this.cur = null;
+  }
+};
+$('qThrow').addEventListener('click', () => Quick.throw());
+$('qCheck').addEventListener('click', () => Quick.check());
+$('qInput').addEventListener('keydown', e => { if (e.key === 'Enter') Quick.check(); });
+
+/* ===== настройки ===== */
+const Settings = {
+  render() {
+    $('sRate').value = state.settings.rate;
+    $('sRateV').textContent = state.settings.rate;
+    $('sInt').value = state.settings.interval;
+    $('sIntV').textContent = state.settings.interval;
+    $('sHide').value = state.settings.hide ? '1' : '0';
+    $('sSound').value = state.settings.sound ? '1' : '0';
+    fillVoices();
+  }
+};
+$('sRate').addEventListener('input', e => {
+  state.settings.rate = +e.target.value;
+  $('sRateV').textContent = state.settings.rate;
+  Store.save();
+});
+$('sInt').addEventListener('change', e => {
+  let v = Math.min(60, Math.max(3, parseInt(e.target.value) || 10));
+  state.settings.interval = v; e.target.value = v;
+  $('sIntV').textContent = v;
+  if (Listen.playing) Listen.left = v;
+  Store.save();
+});
+$('sHide').addEventListener('change', e => {
+  state.settings.hide = e.target.value === '1';
+  Store.save(); Input.render(); Listen.render();
+});
+$('sSound').addEventListener('change', e => {
+  state.settings.sound = e.target.value === '1';
+  Store.save();
+});
+$('sVoiceEn').addEventListener('change', e => { state.settings.voice_en = e.target.value; Store.save(); toast('Голос сохранён', 'ok'); });
+$('sVoiceRu').addEventListener('change', e => { state.settings.voice_ru = e.target.value; Store.save(); toast('Голос сохранён', 'ok'); });
+$('sTest').addEventListener('click', () => { Sfx.ok(); announce({ t: 'Hello! Привет! Это проверка звука.', l: 'en' }); });
+$('sReset').addEventListener('click', () => {
+  if (confirm('Сбросить ВСЕ слова и настройки?')) {
+    localStorage.removeItem(Store.KEY);
+    state = Store.load();
+    Input.render(); Listen.render(); Dict.render(); Speak.render(); Settings.render();
+    toast('Всё сброшено');
+  }
+});
+
+/* ===== boot ===== */
+Input.render();
+Listen.render();
+Dict.render();
+Speak.render();
+Settings.render();
+setTimeout(() => toast('✅ Запущено — учим слова!', 'ok'), 400);
+console.info('WordSketch v7.4 | слов: ' + state.words.length);
+console.log('%c🥚 Псс... секретное слово знает только хозяин приложения. Попробуй написать его в любом поле.', 'color:#d94f3d;font-size:13px;font-weight:bold');
+</script>
+</body>
+</html>
